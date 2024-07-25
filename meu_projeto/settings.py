@@ -10,7 +10,8 @@ SECRET_KEY = 'rakel'
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.15.114', '192.168.15.111', 'localhost']
+#ALLOWED_HOSTS = ['192.168.15.114', '192.168.15.111', 'localhost']
+ALLOWED_HOSTS = ['*']
 
 
 INSTALLED_APPS = [
