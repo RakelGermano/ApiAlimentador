@@ -1,0 +1,145 @@
+/* styles.css */
+
+.top-bar {
+    background: linear-gradient( rgba(72, 221, 237, 0.728), white);
+    color: black;
+    position: absolute;
+    top: 0px;
+    left: 0;
+    padding: 15px;
+    width: 98%;
+    height: 20%;
+}
+
+.title{
+    color: black;
+    text-align: center;
+    position: absolute;
+    top: 40px;
+    left: 350px;
+    width: 50%;
+    font-family: 'Fantasy', sans-serif;
+}
+
+.botoestopo {
+    text-align: left; /* Alinha o texto à esquerda dentro do elemento */
+    left: 5;
+    background-color: transparent;
+    border-radius: 3px;
+    font-size: 16px; 
+}
+
+/* Estilo para os botões */
+.botoestopo button {
+    padding: 0.7em;
+    color: black;
+    background-color: transparent;
+    border: none;
+    border-radius: .3em;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+.botoestopo a button:hover {
+    border: 1px solid black;
+}
+
+.botoesacionamento {
+    position: absolute;
+    width: 200px;
+    top: 250px;
+    left: 50px;
+    margin: 0 auto;
+    padding: 1em;
+    border: 1px solid #ccc;
+    border-radius: 1em;
+    background-color: #f9f9f9;
+}
+
+.botoesacionamento div {
+    margin-bottom: 1em;
+    
+}
+
+.botoesacionamento label {
+    margin-bottom: .5em;
+    color: #333333;
+    display: block;
+    
+}
+
+.botoesacionamento input {
+    border: 1px solid #CCCCCC;
+    padding: .5em;
+    font-size: 1em;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: .3em;
+    
+}
+
+.botoesacionamento button {
+    padding: 0.7em;
+    color: black;
+    background-color: transparent;
+    border-radius: .3em;
+    width: 100px;
+    cursor: pointer;
+    font-size: 1em;
+    border: 1px solid black;
+    
+}
+
+.botoesacionamento button:hover {
+    border: 2px solid black;
+}
+
+.botoesinput {
+    position: absolute;
+    width: 200px;
+    top: 250px;
+    left: 300px;
+    margin: 0 auto;
+    padding: 1em;
+    border: 1px solid #ccc;
+    border-radius: 1em;
+    background-color: #f9f9f9;
+}
+
+.botoesinput div {
+    margin-bottom: 1em;
+    
+}
+
+.botoesinput label {
+    margin-bottom: .5em;
+    color: #333333;
+    display: block;
+    
+}
+
+.botoesinput input {
+    border: 1px solid #CCCCCC;
+    padding: .5em;
+    font-size: 1em;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: .3em;
+    
+}
+
+.botoesinput button {
+    padding: 0.7em;
+    color: black;
+    background-color: transparent;
+    border-radius: .3em;
+    width: 100px;
+    cursor: pointer;
+    font-size: 1em;
+    border: 1px solid black;
+    
+}
+
+.botoesinput button:hover {
+    border: 2px solid black;
+}

@@ -1,0 +1,92 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CriarConta</title>
+    <link rel="stylesheet" href="{% static 'Dashboard/css/styles.css' %}">
+    <style>
+        #circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: red; /* Cor inicial do círculo */
+        }
+        #estado {
+            font-size: 20px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="botoestopo">
+            <!-- Adicione um botão para redirecionar para a página de logout -->
+            <a href="{% url 'logout' %}"><button>Logout</button></a>
+        </div> 
+        <div class="title">
+            <p style="font-size: 40px;"><strong>E-Pet</strong></p>
+            <p style="font-size: 20px;">O Assistente pessoal do seu Pet</p>
+        </div>        
+        <div class="botoesacionamento">
+            <p style="font-size: 20px;">Controle seu assistente</p>
+            <!-- Botão para ligar o motor -->
+            <button type="button" onclick="enviarMensagem('ligar')">Ligar Motor</button>
+            <!-- Botão para desligar o motor -->
+            <button type="button" onclick="enviarMensagem('desligar')">Desligar Motor</button>
+        </div>  
+    </div>  
+
+    <div class="botoesinput">
+        <div id="circle"></div>
+        <p id="estado">Estado: Desconhecido</p>
+    </div>
+
+    <script>
+        function atualizaCirculo(estado) {
+            var circle = document.getElementById('circle');
+            var estadoDisplay = document.getElementById('estado');
+            
+            if (estado === '1') {
+                circle.style.backgroundColor = 'green'; // Estado ligado
+            } else {
+                circle.style.backgroundColor = 'pink'; // Estado desligado
+            }
+
+            estadoDisplay.textContent = 'Estado: ' + estado; // Exibe o valor bruto de estado
+        }
+
+        function enviarMensagem(mensagem) {
+            var url = '{% url "enviar_mensagem" %}';
+            var formData = new FormData();
+            formData.append('mensagem', mensagem);
+
+            fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'  // Inclui o token CSRF no cabeçalho
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Resposta do servidor:', data);
+            })
+            .catch(error => console.error('Erro ao enviar requisição:', error));
+        }
+
+        function obterEstadoBotao() {
+            fetch('{% url "update_button_view" %}')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Estado recebido:', data.estado); // Log do estado recebido
+                    atualizaCirculo(data.estado);
+                })
+                .catch(error => console.error('Erro ao obter estado do botão:', error));
+        }
+
+        setInterval(obterEstadoBotao, 1000); // Atualiza a cada segundo
+    </script>
+</body>
+</html>
