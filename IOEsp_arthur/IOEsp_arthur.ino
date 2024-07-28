@@ -9,13 +9,16 @@
 
 // Pinagem do NodeMCU
 #define LED_PIN    14 // D5 (GPIO14)
+#define LED_PIN2    12 // D6 (GPIO12)
+#define BUTTON1    05 // D1 (GPIO05)
+#define BUTTON2    04 // D2 (GPIO04)
 
 // Configuração da rede WiFi
-const char* SSID = "RENATA";
-const char* PASSWORD = "010507ggr!";
+const char* SSID = "LUDU";
+const char* PASSWORD = "12111977D@m";
 
 // URL do servidor Django para enviar dados
-const char* SERVER_URL = "http://192.168.15.114:8000/update_button/";
+const char* SERVER_URL = "http://192.168.15.30:8000/update_button/";
 
 // Configurações MQTT
 const char* BROKER_MQTT = "mqtt.eclipseprojects.io";
@@ -33,12 +36,17 @@ void reconnectMQTT();
 void VerificaConexoesWiFIEMQTT();
 void mqtt_callback(char* topic, byte* payload, unsigned int length);
 String getCSRFToken();
-void enviaEstadoBotao();
+void enviaEstadoBotao(int button, const String& estado);
 
 void setup() {
-    pinMode(D1, INPUT);
     pinMode(LED_PIN, OUTPUT);
     digitalWrite(LED_PIN, LOW);
+
+    pinMode(LED_PIN2, OUTPUT);
+    digitalWrite(LED_PIN2, LOW);
+
+    pinMode(BUTTON1, INPUT);
+    pinMode(BUTTON2, INPUT);
 
     Serial.begin(115200);
     initWiFi();
@@ -48,7 +56,39 @@ void setup() {
 void loop() {
     VerificaConexoesWiFIEMQTT();
     MQTT.loop();
-    enviaEstadoBotao();
+    
+    static bool estadoBotaoAnt1 = HIGH;
+    static bool estadoBotaoAnt2 = HIGH;
+    static unsigned long debounceBotao1;
+    static unsigned long debounceBotao2;
+    
+    bool estadoBotao1 = digitalRead(BUTTON1);
+    bool estadoBotao2 = digitalRead(BUTTON2);
+
+    if ((millis() - debounceBotao1) > 50) {
+        if (estadoBotao1 != estadoBotaoAnt1) {
+            debounceBotao1 = millis();
+            if (estadoBotao1) {
+                enviaEstadoBotao(1, "botao1Pressionado");
+            } else {
+                enviaEstadoBotao(1, "botao1Solto");
+            }
+        }
+        estadoBotaoAnt1 = estadoBotao1;
+    }
+
+    if ((millis() - debounceBotao2) > 50) {
+        if (estadoBotao2 != estadoBotaoAnt2) {
+            debounceBotao2 = millis();
+            if (estadoBotao2) {
+                enviaEstadoBotao(2, "botao2Pressionado");
+            } else {
+                enviaEstadoBotao(2, "botao2Solto");
+            }
+        }
+        estadoBotaoAnt2 = estadoBotao2;
+    }
+
     delay(1000);
 }
 
@@ -125,13 +165,20 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
         Serial.println("Recebeu Comando: Desligar"); 
         digitalWrite(LED_PIN, LOW);
     }
+    if (msg == "ligar2") {
+        Serial.println("Recebeu Comando: Ligar2");
+        digitalWrite(LED_PIN2, HIGH); 
+    } else if (msg == "desligar2") {
+        Serial.println("Recebeu Comando: Desligar2"); 
+        digitalWrite(LED_PIN2, LOW);
+    }
 }
 
 String getCSRFToken() {
     HTTPClient http;
     WiFiClient client;
 
-    String url = "http://192.168.15.114:8000/get_csrf_token/";
+    String url = "http://192.168.15.30:8000/get_csrf_token/";
     http.begin(client, url);
 
     int httpResponseCode = http.GET();
@@ -153,28 +200,7 @@ String getCSRFToken() {
     return csrfToken;
 }
 
-void enviaEstadoBotao() {
-    static bool estadoBotaoAnt = HIGH;
-    static unsigned long debounceBotao;
-    
-    bool estadoBotao = digitalRead(D1);
-    Serial.print("Valor da entrada: ");
-    Serial.println(estadoBotao);
-    if ((millis() - debounceBotao) > 50) {
-      Serial.println(estadoBotao);
-        if (estadoBotao != estadoBotaoAnt) {
-            debounceBotao = millis();
-            if (estadoBotao) {
-                MQTT.publish(TOPICO_PUBLISH, "1");
-                Serial.println("Botao Apertado Resposta: 1");
-            } else {
-                MQTT.publish(TOPICO_PUBLISH, "0");
-                Serial.println("Botao Solto Resposta: 0");
-            }
-        }
-        estadoBotaoAnt = estadoBotao;
-    }
-
+void enviaEstadoBotao(int button, const String& estado) {
     if (WiFi.status() == WL_CONNECTED) {
         HTTPClient http;
         WiFiClient client;
@@ -186,15 +212,25 @@ void enviaEstadoBotao() {
         String csrfToken = getCSRFToken();
         http.addHeader("X-CSRFToken", csrfToken);
 
-        String payload = "{\"estado\": \"" + String(estadoBotao ? "1" : "0") + "\"}";
-        int httpResponseCode = http.POST(payload);
+        // Cria o payload JSON corretamente formatado
+        String payload = "{\"botao\": " + String(button) + ", \"estado\": \"" + estado + "\"}";
+        Serial.println("Payload enviado:");
+        Serial.println(payload);
 
-        if (httpResponseCode > 0) {
-            String response = http.getString();
-            Serial.print("HTTP Response code: ");
-            Serial.println(httpResponseCode);
-            Serial.print("Response: ");
-            Serial.println(response);
+        // Envia a requisição POST
+        int httpResponseCode = http.POST(payload);
+        String response = http.getString(); // Captura a resposta
+
+        // Exibe o código de resposta HTTP e a resposta
+        Serial.print("HTTP Response code: ");
+        Serial.println(httpResponseCode);
+        Serial.print("Response: ");
+        Serial.println(response);
+
+        if (httpResponseCode == HTTP_CODE_OK) {
+            Serial.println("Requisição POST bem-sucedida");
+        } else if (httpResponseCode == HTTP_CODE_MOVED_PERMANENTLY || httpResponseCode == HTTP_CODE_FOUND) {
+            Serial.println("Redirecionamento detectado.");
         } else {
             Serial.print("Erro ao enviar POST: ");
             Serial.println(httpResponseCode);

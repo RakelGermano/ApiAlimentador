@@ -9,6 +9,5 @@ urlpatterns = [
     path('CriarConta/', meu_projeto_views.CriarConta_view, name='CriarConta'),
     path('Dashboard', dashboard_views.dashboard, name='dashboard'),
     path('enviar_mensagem', dashboard_views.enviar_mensagem, name='enviar_mensagem'),
-    # path('update_button/', dashboard_views.update_button, name='update_button'),
     path('', include('Dashboard.urls')),
 ]

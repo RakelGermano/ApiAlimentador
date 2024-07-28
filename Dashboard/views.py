@@ -1,8 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 import paho.mqtt.publish as publish
-import paho.mqtt.client as mqtt_client
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
 from .models import EstadoBotao
 from django.middleware.csrf import get_token
 from django.http import HttpResponse
@@ -31,37 +30,41 @@ def enviar_mensagem(request):
     return redirect('dashboard')
 
 @csrf_exempt
-@login_required
-def update_button_view(request):
-    if request.method == 'GET':
-        try:
-            estado_botao = EstadoBotao.objects.get(id=1)
-            estado = '1' if estado_botao.estado else '0'
-            return JsonResponse({'estado': estado})
-        except EstadoBotao.DoesNotExist:
-            return JsonResponse({'estado': '0'})
-    return JsonResponse({'error': 'Invalid request method'}, status=405)
-
-
-@csrf_exempt
 def update_button(request):
     if request.method == 'POST':
         try:
-            data = json.loads(request.body.decode('utf-8'))
+            data = json.loads(request.body)
+            button = data.get('botao')
             estado = data.get('estado')
 
-            # Salvar o estado no banco de dados (exemplo com EstadoBotao)
-            estado_obj, created = EstadoBotao.objects.get_or_create(id=1)
-            estado_obj.estado = int(estado)  # Converte para inteiro, se necessário
-            estado_obj.save()
+            # Atualiza o estado no banco de dados
+            estado_botao, created = EstadoBotao.objects.get_or_create(id=1)  # Ajuste conforme sua necessidade
+            if button == 1:
+                estado_botao.estado1 = (estado == 'botao1Pressionado')
+            elif button == 2:
+                estado_botao.estado2 = (estado == 'botao2Pressionado')
+            estado_botao.save()
 
-            print(f"Estado do botão salvo no banco de dados: {estado}")
-            return JsonResponse({'status': 'sucesso', 'estado': estado})
+            print(f'Botão: {button}, Estado: {estado}')
+            return JsonResponse({'status': 'success', 'message': 'Dados recebidos'})
         except json.JSONDecodeError:
-            return JsonResponse({'status': 'erro', 'mensagem': 'JSON inválido'}, status=400)
+            return JsonResponse({'status': 'error', 'message': 'Erro ao processar dados'}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Método não permitido'}, status=405)
+
+def get_button_states(request):
+    estado_botao = EstadoBotao.objects.first()
+    if estado_botao:
+        data = {
+            'estado1': 'botao1Pressionado' if estado_botao.estado1 else 'botao1Solto',
+            'estado2': 'botao2Pressionado' if estado_botao.estado2 else 'botao2Solto'
+        }
     else:
-        return JsonResponse({'status': 'erro', 'mensagem': 'Método não permitido'}, status=405)
-    
+        data = {
+            'estado1': 'desconhecido',
+            'estado2': 'desconhecido'
+        }
+    return JsonResponse(data)
+
 def index(request):
     try:
         estado_botao = EstadoBotao.objects.get(id=1)

@@ -38,20 +38,26 @@ def login_view(request):
             return render(request, 'login.html', {'error': 'Credenciais inválidas'})
     return render(request, 'login.html')
 
-@csrf_protect
-def update_button(request):
-    if request.method == 'POST':
-        estado = request.POST.get('estado')
-        if estado is not None:
-            estado_botao, created = EstadoBotao.objects.get_or_create(id=1)
-            estado_botao.estado = bool(int(estado))
-            estado_botao.save()
-            # Aqui você pode adicionar lógica adicional, se necessário
-            return redirect('dashboard')  # Redireciona para a view ou URL com nome 'dashboard'
-        else:
-            return JsonResponse({'status': 'erro'})
-    else:
-        return JsonResponse({'status': 'erro'})
+# @csrf_protect
+# def update_button(request):
+#     if request.method == 'POST':
+#         try:
+#             data = json.loads(request.body)
+#             button = data.get('botao')
+#             estado = data.get('estado')
+
+#             # Aqui você pode adicionar lógica para atualizar o estado dos botões
+#             # e animar os círculos na página do dashboard.
+#             # Exemplo:
+#             #print(f'Botão: {button}, Estado: {estado}')
+
+#             # Supondo que você atualize alguma variável global ou banco de dados
+#             # que a página do dashboard lê para saber como animar os círculos.
+
+#             return JsonResponse({'status': 'success', 'message': 'Dados recebidos'})
+#         except json.JSONDecodeError:
+#             return JsonResponse({'status': 'error', 'message': 'Erro ao processar dados'}, status=400)
+#     return JsonResponse({'status': 'error', 'message': 'Método não permitido'}, status=405)
 
 def logout_view(request):
     logout(request)

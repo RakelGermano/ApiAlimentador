@@ -10,8 +10,7 @@ SECRET_KEY = 'rakel'
 
 DEBUG = True
 
-#ALLOWED_HOSTS = ['192.168.15.114', '192.168.15.111', 'localhost']
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['192.168.15.30', '192.168.15.86', '127.0.0.1']
 
 
 INSTALLED_APPS = [
@@ -85,7 +84,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'pt-br'
 
 TIME_ZONE = 'UTC'
 
