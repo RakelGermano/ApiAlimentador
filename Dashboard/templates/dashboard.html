@@ -1,0 +1,111 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CriarConta</title>
+    <link rel="stylesheet" href="{% static 'Dashboard/css/styles.css' %}">
+    <style>
+        #circle1, #circle2 {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: red; /* Cor inicial do círculo */
+        }
+        #estado1, #estado2 {
+            font-size: 20px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="botoestopo">
+            <a href="{% url 'logout' %}"><button>Logout</button></a>
+        </div> 
+        <div class="title">
+            <p style="font-size: 40px;"><strong>E-Pet</strong></p>
+            <p style="font-size: 20px;">O Assistente pessoal do seu Pet</p>
+        </div>        
+        <div class="botoesacionamento">
+            <p style="font-size: 20px;">Controle seu assistente</p>
+            <button type="button" onclick="enviarMensagem('ligar')">Ligar Motor</button>
+            <button type="button" onclick="enviarMensagem('desligar')">Desligar Motor</button>
+            <button type="button" onclick="enviarMensagem('ligar2')">Ligar Motor2</button>
+            <button type="button" onclick="enviarMensagem('desligar2')">Desligar Motor2</button>
+        </div>
+    </div>  
+
+    <div class="botoesinput">
+        <div id="circle1"></div>
+        <p id="estado1">Estado Botão 1: Desconhecido</p>
+        <div id="circle2"></div>
+        <p id="estado2">Estado Botão 2: Desconhecido</p>
+    </div>
+
+    <script>
+        function obterEstadoBotao() {
+            fetch('/get_button_states/')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Estados recebidos:', data);
+                    atualizaCirculos(data);
+                })
+                .catch(error => console.error('Erro ao obter estado do botão:', error));
+        }
+
+        function atualizaCirculos(estados) {
+            console.log('Atualizando círculos com estados:', estados);
+            
+            var circle1 = document.getElementById('circle1');
+            var estadoDisplay1 = document.getElementById('estado1');
+            var circle2 = document.getElementById('circle2');
+            var estadoDisplay2 = document.getElementById('estado2');
+            
+            // Atualiza cor e texto do círculo 1
+            if (estados.estado1 === 'botao1Pressionado') {
+                circle1.style.backgroundColor = 'green';
+            } else {
+                circle1.style.backgroundColor = 'red';
+            }
+            estadoDisplay1.textContent = 'Estado Botão 1: ' + estados.estado1;
+
+            // Atualiza cor e texto do círculo 2
+            if (estados.estado2 === 'botao2Pressionado') {
+                circle2.style.backgroundColor = 'green';
+            } else {
+                circle2.style.backgroundColor = 'red';
+            }
+            estadoDisplay2.textContent = 'Estado Botão 2: ' + estados.estado2;
+        }
+
+        // Atualiza os estados periodicamente
+        setInterval(obterEstadoBotao, 1000);
+
+        function enviarMensagem(mensagem) {
+            var url = '{% url "enviar_mensagem" %}';
+            var formData = new FormData();
+            formData.append('mensagem', mensagem);
+
+            fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Resposta do servidor:', data);
+            })
+            .catch(error => console.error('Erro ao enviar requisição:', error));
+        }
+    </script>
+</body>
+</html>
